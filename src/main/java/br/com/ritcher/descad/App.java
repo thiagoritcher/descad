@@ -21,8 +21,8 @@ public class App {
 
 	private DXFDocument dxfDocument;
 	private DXFGraphics dxfGraphics;
-	private String file = "C:\\Users\\talvares\\Downloads\\descad\\out.dxf";
-	private String infile = "C:\\Users\\talvares\\Downloads\\descad\\input.csv";
+	private final String file = "C:\\Users\\talvares\\Downloads\\descad\\out.dxf";
+	private final String infile = "C:\\Users\\talvares\\Downloads\\descad\\input.csv";
 
 	public static void main(String[] args) throws IOException {
 		App ap = new App();
@@ -61,8 +61,7 @@ public class App {
 		}
 
 		String dxfText = dxfDocument.toDXFString();
-		String filePath = file;
-		File fileo = new File(filePath);
+		File fileo = new File(file);
 		System.out.println("Escrevendo dxf para ");
 		System.out.println(fileo.getAbsolutePath());
 		FileWriter fileWriter = new FileWriter(fileo);
@@ -127,13 +126,9 @@ public class App {
 		else {
 			Module module = moduleMap.get(ps[4]);
 
-			try {
-				module = (Module) module.clone();
-				module.reset();
+			module = new Module(module);
+			module.reset();
 
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
-			}
 
 			String id = ps[0];
 			String lc = ps[3].trim();

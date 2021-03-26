@@ -22,6 +22,20 @@ public class Module implements Shape {
 
     Point2D.Double size = new Point2D.Double();
 
+    public Module(Module m) {
+        rotate = (AffineTransform) m.rotate.clone();
+        translate = (AffineTransform) m.translate.clone();
+        result  = new ArrayList<>(m.result);
+        module  = m.module.clone();
+        size  = (Point2D.Double) m.size.clone();
+        offset = (Point2D.Double) m.offset.clone();
+        id  = m.id;
+    }
+
+    public Module() {
+
+    }
+
     @Override
     public String getId() {
         return id;
@@ -76,23 +90,6 @@ public class Module implements Shape {
         this.module = module;
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        try {
-            super.clone();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        Module c = new Module();
-        c.rotate = (AffineTransform) rotate.clone();
-        c.translate = (AffineTransform) translate.clone();
-        c.result  = new ArrayList<>(result);
-        c.module  = module.clone();
-        c.size  = (Point2D.Double) size.clone();
-        c.id  = id;
-        return c;
-    }
 
     @Override
     public void draw(DXFGraphics g) {
@@ -166,7 +163,6 @@ public class Module implements Shape {
                     }
                     break;
                 case "circle":
-                    break;
                 case "arc":
                     break;
                 default:
