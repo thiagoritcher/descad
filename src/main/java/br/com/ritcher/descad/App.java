@@ -15,12 +15,13 @@ import java.util.HashMap;
  *
  */
 public class App {
-	String input = null;
+	String inputContents = null;
 
 	private DXFDocument dxfDocument;
 	private DXFGraphics dxfGraphics;
-	private String file;
-	private String infile;
+
+	private String output;
+	private String input;
 
 	public static void main(String[] args) throws IOException {
 		App ap = new App();
@@ -28,21 +29,21 @@ public class App {
 			switch (args[i]){
 				case "--input":
 				case "-i":
-					ap.infile = args[i+1];
+					ap.input = args[i+1];
 					i++;
 					break;
+				case "-o":
 				case "--output":
-					ap.file = args[i+1];
+					ap.output = args[i+1];
 					i++;
 					break;
 				case "--help":
-				default:
 					print_help(null);
 					break;
 			}
 		}
 
-		if(ap.infile == null || ap.file == null){
+		if(ap.input == null || ap.output == null){
 			print_help("--input e --output devem ser especificados.");
 			return;
 		}
@@ -70,9 +71,9 @@ public class App {
 		sb.append('\n');
 		sb.append("Design").append('\n');
 		sb.append("ID	W	H	Loc	Module	dx	dy").append('\n');
-		sb.append("	1	150	150	0	R	0	0").append('\n');
-		sb.append("	2	80	150	O1	R").append('\n');
-		sb.append("	3	20	150	O2	R").append('\n');
+		sb.append("1	150	150	0	R	0	0").append('\n');
+		sb.append("2	80	150	O1	R").append('\n');
+		sb.append("3	20	150	O2	R").append('\n');
 		sb.append("4	80	150	L1	R").append('\n');
 		sb.append("5	20	150	L4	R").append('\n');
 		sb.append("6	150	80	S1	R").append('\n');
@@ -97,7 +98,7 @@ public class App {
 	}
 
 	void readInput() throws IOException {
-		BufferedReader fr = new BufferedReader(new FileReader(infile));
+		BufferedReader fr = new BufferedReader(new FileReader(input));
 		StringBuilder buffer = new StringBuilder();
 
 		String line = fr.readLine();
@@ -105,7 +106,7 @@ public class App {
 			buffer.append(line).append("\n");
 			line = fr.readLine();
 		}
-		input = buffer.toString();
+		inputContents = buffer.toString();
 	}
 
 
@@ -118,18 +119,15 @@ public class App {
 
 		dxfGraphics.transform(t);
 
-//		dxfDocument.setLayer("1");
-//		dxfGraphics.setColor(Color.RED);
-
 		for (Shape s: map.values()) {
 			s.draw(dxfGraphics);
 		}
 
 		String dxfText = dxfDocument.toDXFString();
-		File fileo = new File(file);
+		File outputFile = new File(output);
 		System.out.println("Escrevendo dxf para ");
-		System.out.println(fileo.getAbsolutePath());
-		FileWriter fileWriter = new FileWriter(fileo);
+		System.out.println(outputFile.getAbsolutePath());
+		FileWriter fileWriter = new FileWriter(outputFile);
 		fileWriter.write(dxfText);
 		fileWriter.flush();
 		fileWriter.close();
@@ -140,7 +138,7 @@ public class App {
 		dxfGraphics = dxfDocument.getGraphics();
 
 		int status = 0;
-		String[] rs = input.split("\n");
+		String[] rs = inputContents.split("\n");
 		for (String r: rs) {
 			String[] ps = r.split("\t\\s*");
 			if(ps.length < 1){
@@ -209,10 +207,10 @@ public class App {
 			}
 
 
-			String lcid = lc.substring(1);
+			String lc_id = lc.substring(1);
 			String lcl = lc.substring(0,1);
 
-			Shape lcr = map.get(lcid);
+			Shape lcr = map.get(lc_id);
 
 			Point2D pa = lcr.getAttachment(lcl);
 			module.attachTo(lcl, pa);
@@ -238,10 +236,10 @@ public class App {
 			map.put(id, ro);
 			return;
 		}
-		String lcid = lc.substring(1);
+		String lc_id = lc.substring(1);
 		String lcl = lc.substring(0,1);
 
-		Shape lcr = map.get(lcid);
+		Shape lcr = map.get(lc_id);
 
 		Point2D pa = lcr.getAttachment(lcl);
 		ro.attachTo(lcl, pa);
