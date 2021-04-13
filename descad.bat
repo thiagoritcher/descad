@@ -1,0 +1,1 @@
+java -Dfile.encoding=UTF-8 -classpath C:\work\Java3\descad\target\classes;C:\work\Java3\descad\lib\jdxf.jar br.com.ritcher.descad.App %*
