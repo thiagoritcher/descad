@@ -120,7 +120,7 @@ public class App {
 		dxfGraphics.transform(t);
 
 		for (Shape s: map.values()) {
-			s.draw(dxfGraphics);
+			s.draw(dxfGraphics, dxfDocument);
 		}
 
 		String dxfText = dxfDocument.toDXFString();

@@ -92,6 +92,7 @@ public class Module implements Shape {
 
 
     @Override
+    public void draw(DXFGraphics g, DXFDocument dxfDocument) {
     public void draw(DXFGraphics g) {
         for (java.awt.Shape s:result ) {
             g.draw(s);

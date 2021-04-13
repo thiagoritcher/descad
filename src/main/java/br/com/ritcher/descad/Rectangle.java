@@ -3,7 +3,6 @@ package br.com.ritcher.descad;
 import com.jsevy.jdxf.DXFDocument;
 import com.jsevy.jdxf.DXFGraphics;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -96,7 +95,7 @@ public class Rectangle implements Shape {
     }
 
     @Override
-    public void draw(DXFGraphics g) {
+    public void draw(DXFGraphics g, DXFDocument dxfDocument) {
         double ox = offset.getX();
         double oy = offset.getY();
         g.drawRect(r.getX() - r.getWidth()/2 + ox, r.getY() - r.getHeight()/2 + oy, r.getWidth(), r.getHeight());
