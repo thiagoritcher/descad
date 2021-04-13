@@ -1,15 +1,16 @@
 package br.com.ritcher.descad;
 
+import com.jsevy.jdxf.DXFDocument;
 import com.jsevy.jdxf.DXFGraphics;
 
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Module implements Shape {
 
-    ArrayList<java.awt.Shape> result = new ArrayList<>();
+    ArrayList<CADEntity> result = new ArrayList<>();
 
     AffineTransform rotate = new AffineTransform();
     AffineTransform translate = new AffineTransform();
@@ -93,86 +94,127 @@ public class Module implements Shape {
 
     @Override
     public void draw(DXFGraphics g, DXFDocument dxfDocument) {
-    public void draw(DXFGraphics g) {
-        for (java.awt.Shape s:result ) {
-            g.draw(s);
+        for (CADEntity s:result ) {
+            s.draw(g, dxfDocument);
         }
     }
 
     public void set(){
-        Point2D.Double first = null, last = null, current = null, transf;
         String command = null;
-        boolean x = true, isfirst = false;
-        int i = -1;
 
-        for (String c:module) {
-            i++;
+        for (int i = 0; i < module.length ; i++) {
+            String c = module[i];
             switch (c){
                 case "pl":
-                    command = c;
-                    first = null;
-                    last = null;
-                    isfirst = true;
+                    i = polyline(i +1);
                     continue;
                 case "arc":
-                case "circle":
+                    i = arc_center_angle_start_finish(i +1);
+                    continue;
+                case "arc_3p":
+                case "rc_circle":
+                case "dc_circle":
+                case "2p_circle":
+                case "pc_circle":
                     command = c;
                     continue;
             }
             if(command == null){
                 continue;
             }
+        }
+    }
 
-            switch (command){
-                case "pl":
-                    if(c.length() < 1){
-                        continue;
-                    }
-                    if(x){
-                        current = new Point2D.Double();
-                        current.x = Double.parseDouble(c);
-                        x = false;
+    private int arc_center_angle_start_finish(int j) {
+        Point2D.Double center = null;
+        double radius = 0, start = 0, finish = 0;
+        boolean inverted;
 
-                    }
-                    else {
-                        current.y = Double.parseDouble(c);
-                        x = true;
+        int i = j;
 
-                        transf = new Point2D.Double();
-                        rotate.transform(current, transf);
-                        current = transf;
-                        translate.transform(current, transf);
-                        current = transf;
+        String c = module[i];
+        center = new Point2D.Double(Double.parseDouble(module[i]), Double.parseDouble(module[i+1]));
+        i += 2;
 
-                        if(isfirst){
-                            first = (Point2D.Double) current.clone();
-                            isfirst = false;
-                        }
-                        if(last != null){
-                            Line2D.Double line = new Line2D.Double();
-                            line.setLine(last.x, last.y, current.x, current.y);
-                            result.add(line);
-                        }
-                        last = (Point2D.Double) current.clone();
-                        if(i == module.length -1){
-                            if(first !=null && last != null){
-                                Line2D.Double line = new Line2D.Double();
-                                line.setLine(last.x, last.y, first.x, first.y);
-                                result.add(line);
-                            }
-                        }
-                    }
-                    break;
-                case "circle":
-                case "arc":
-                    break;
-                default:
-                    throw new RuntimeException(String.format("Comando nao definido: %s", command));
+        radius = Double.parseDouble(module[i]);
+        i++;
+
+        start = Math.toRadians(Double.parseDouble(module[i]));
+        i++;
+
+        finish = Math.toRadians(Double.parseDouble(module[i]));
+        i++;
+
+        inverted = Boolean.parseBoolean(module[i]);
+        i++;
+
+        Arc a = new Arc(center, radius, start, finish, inverted);
+        a.transform(rotate);
+        a.transform(translate);
+        result.add(a);
+
+        return i;
+    }
+
+    private int polyline(int j) {
+        PolyLine p = new PolyLine();
+        result.add(p);
+        int i = j;
+        for (; i < module.length ; i++) {
+            try {
+                p.add(new Point2D.Double(Double.parseDouble(module[i]), Double.parseDouble(module[i+1])));
+                i++;
+            }
+            catch (NumberFormatException nfe){
+                return i;
             }
         }
+        return i;
     }
 
     public void setSize(Point2D.Double aDouble) {
         this.size = aDouble;
+    }
+
+    class Line implements CADEntity {
+        double x1, y1, x2, y2;
+
+        public Line(double x1, double y1, double x2, double y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void draw(DXFGraphics g, DXFDocument dxfDocument) {
+            g.drawLine(x1, y1, x2, y2);
+        }
+    }
+
+    class PolyLine implements CADEntity {
+
+        public boolean add(Point2D.Double aDouble) {
+            return points.add(aDouble);
+        }
+
+        List<Point2D.Double> points = new ArrayList<>();
+        @Override
+        public void draw(DXFGraphics g, DXFDocument dxfDocument) {
+            double[] x = new double[points.size() + 1], y = new double[points.size() + 1];
+            int i = -1;
+            for (Point2D.Double p: points) {
+               i++;
+               rotate.transform(p, p);
+               translate.transform(p, p);
+
+               x[i]=p.getX();
+               y[i]=p.getY();
+            }
+            x[i+1]=x[0];
+            y[i+1]=y[0];
+
+            g.drawPolyline(x , y,points.size() + 1);
+        }
     }
 }
