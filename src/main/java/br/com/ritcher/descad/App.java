@@ -23,7 +23,7 @@ public class App {
 	private String output;
 	private String input;
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args){
 		App ap = new App();
 		for (int i = 0; i < args.length; i++) {
 			switch (args[i]){
@@ -48,9 +48,14 @@ public class App {
 			return;
 		}
 
-		ap.readInput();
-		ap.process();
-		ap.write();
+		try {
+			ap.readInput();
+			ap.process();
+			ap.write();
+
+		}catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 
 	private static void print_help(String s) {
